@@ -1,4 +1,5 @@
 const express = require("express")
+const cors = require("cors")
 const sharp = require("sharp")
 const axios = require("axios").default
 const FormData = require('form-data')
@@ -7,7 +8,7 @@ const {Editor} = require("./editor-runner")
 
 const IMGUR_CLIENT_ID = "ba8c5d881c8f203"
 const port = process.env.PORT || 3000
-const NUM_EDITORS = 2
+const NUM_EDITORS = 10
 
 let editorPool = []
 for(let i=0; i < NUM_EDITORS; i++) {
@@ -16,6 +17,7 @@ for(let i=0; i < NUM_EDITORS; i++) {
 
 const app = express()
 app.use(express.json())
+app.use(cors())
 
 app.get("/", (req, res) => {
   res.send(`<h4>Usage:</h4> <div>POST <span id="url"></span></div> <div>Content-Type: application/json</div> <div>{"xml": "..."}</div>
@@ -30,11 +32,14 @@ app.get("/hard-reload", async (req, res) => {
 })
 
 app.post("/", async (req,res) => {
-  if(!req.body.xml) {
-    res.status(400)
-    res.send('POST body should look like this: {"xml":"<C></C>"}')
-  }
   console.log("POST request on '/'")
+  console.log(req.body)
+  if(!req.body.xml) {
+    console.log("Invalid request body")
+    res.status(400)
+    res.send('Invalid request body')
+    return
+  }
   let _editor
   try {
     let intervalId = setInterval(() => {
@@ -54,15 +59,17 @@ app.post("/", async (req,res) => {
       if(req.body.width || req.body.height) {
         buffer = await 
           sharp(buffer)
-          .resize(req.body.width, req.body.height)
+          .resize(req.body.width, req.body.height, {fit: "fill"})
           .toBuffer()
       }
       if(req.body.raw) {
+        res.type("png")
         res.send(buffer)
       } else {
         let imgurOutput = await uploadToImgur(buffer)
         console.log(imgurOutput)
         if(imgurOutput.success) {
+          res.type("text")
           res.send(imgurOutput.link)
         } else {
           res.status(500)
