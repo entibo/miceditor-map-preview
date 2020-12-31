@@ -2,16 +2,16 @@ const express = require("express")
 const cors = require("cors")
 const sharp = require("sharp")
 const axios = require("axios").default
-const FormData = require('form-data')
+const FormData = require("form-data")
 
-const {Editor} = require("./editor-runner")
+const { Editor } = require("./editor-runner")
 
 const IMGUR_CLIENT_ID = "ba8c5d881c8f203"
 const port = process.env.PORT || 3000
 const NUM_EDITORS = 3
 
 let editorPool = []
-for(let i=0; i < NUM_EDITORS; i++) {
+for (let i = 0; i < NUM_EDITORS; i++) {
   editorPool.push(new Editor())
 }
 
@@ -31,21 +31,21 @@ app.get("/hard-reload", async (req, res) => {
   })
 })
 
-app.post("/", async (req,res) => {
+app.post("/", async (req, res) => {
   console.log("POST request on '/'")
   console.log(req.body)
-  if(!req.body.xml) {
+  if (!req.body.xml) {
     console.log("Invalid request body")
     res.status(400)
-    res.send('Invalid request body')
+    res.send("Invalid request body")
     return
   }
   let _editor
   try {
     let intervalId = setInterval(() => {
-      for(let editor of editorPool) {
-        if(editor.available) {
-          console.log("Using editor #"+editorPool.indexOf(editor))
+      for (let editor of editorPool) {
+        if (editor.available) {
+          console.log("Using editor #" + editorPool.indexOf(editor))
           editor.available = false
           clearInterval(intervalId)
           proceed(editor)
@@ -56,19 +56,18 @@ app.post("/", async (req,res) => {
     let proceed = async editor => {
       _editor = editor
       let buffer = await editor.screenshot(req.body)
-      if(req.body.width || req.body.height) {
-        buffer = await 
-          sharp(buffer)
-          .resize(req.body.width, req.body.height, {fit: "fill"})
+      if (req.body.width || req.body.height) {
+        buffer = await sharp(buffer)
+          .resize(req.body.width, req.body.height, { fit: "fill" })
           .toBuffer()
       }
-      if(req.body.raw) {
+      if (req.body.raw) {
         res.type("png")
         res.send(buffer)
       } else {
         let imgurOutput = await uploadToImgur(buffer)
         console.log(imgurOutput)
-        if(imgurOutput.success) {
+        if (imgurOutput.success) {
           res.type("text")
           res.send(imgurOutput.link)
         } else {
@@ -77,25 +76,21 @@ app.post("/", async (req,res) => {
         }
       }
     }
-  } catch(e) {
+  } catch (e) {
     console.error("error:", e)
     res.status(500)
     res.send(e.message)
-    if(_editor) {
+    if (_editor) {
       _editor.refresh()
     }
   }
 })
 
-
-app.listen(port, () =>
-  console.log(`Server listening on port ${port}!`),
-)
-
+app.listen(port, () => console.log(`Server listening on port ${port}!`))
 
 function uploadToImgur(buffer) {
   const imgurForm = new FormData()
-  imgurForm.append('image', buffer)
+  imgurForm.append("image", buffer)
   return axios("https://api.imgur.com/3/image", {
     method: "POST",
     headers: {
@@ -104,19 +99,19 @@ function uploadToImgur(buffer) {
     },
     data: imgurForm,
   })
-  .then(response => {
-    return {
-      status: response.status,
-      success: response.data.success,
-      link: response.data.data.link,
-    }
-  })
-  .catch(e => {
-    console.log("error:", e.response.data.status, e.response.data.data.error)
-    return {
-      status: e.response.data.status,
-      success: false,
-      error: e.response.data.data.error,
-    }
-  })
+    .then(response => {
+      return {
+        status: response.status,
+        success: response.data.success,
+        link: response.data.data.link,
+      }
+    })
+    .catch(e => {
+      console.log("error:", e.response.data.status, e.response.data.data.error)
+      return {
+        status: e.response.data.status,
+        success: false,
+        error: e.response.data.data.error,
+      }
+    })
 }

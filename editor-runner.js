@@ -4,7 +4,6 @@ const miceditorUrl = "https://entibo.github.io/miceditor/#minimal"
 //const miceditorUrl = "http://localhost:8080/#minimal"
 console.log(`Using Miceditor at ${miceditorUrl}`)
 
-
 class Editor {
   constructor() {
     this.available = false
@@ -12,11 +11,11 @@ class Editor {
   }
   async refresh() {
     this.available = false
-    if(this.editorPromise) {
+    if (this.editorPromise) {
       await this.close()
     }
     this.editorPromise = launchEditor()
-    this.editorPromise.then(() => this.available = true)
+    this.editorPromise.then(() => (this.available = true))
   }
   async screenshot(options) {
     let editor = await this.editorPromise
@@ -31,7 +30,6 @@ class Editor {
   }
 }
 module.exports.Editor = Editor
-
 
 const launchEditor = async () => {
   console.log("Launching a browser...")
@@ -74,17 +72,19 @@ const launchEditor = async () => {
   console.log("Editor is ready")
 
   let loadXML = async xml => {
-    let rect = JSON.parse(await page.evaluate(async xml => {
-      // Load the map and wait for render
-      window.xml.set(xml)
-      window.importXML(xml)
-      await window.tick()
+    let rect = JSON.parse(
+      await page.evaluate(async xml => {
+        // Load the map and wait for render
+        window.xml.set(xml)
+        window.importXML(xml)
+        await window.tick()
 
-      let mapBorder = document.querySelector(".mapBorder")
-      let rect = mapBorder.getBoundingClientRect()
-      mapBorder.style.visibility = "hidden"
-      return JSON.stringify(rect)
-    }, xml))
+        let mapBorder = document.querySelector(".mapBorder")
+        let rect = mapBorder.getBoundingClientRect()
+        mapBorder.style.visibility = "hidden"
+        return JSON.stringify(rect)
+      }, xml)
+    )
     await waitForNetworkIdle()
     return rect
   }
@@ -104,7 +104,7 @@ const launchEditor = async () => {
     },
     close: async () => {
       await browser.close()
-    }
+    },
   }
 }
 
@@ -134,7 +134,7 @@ function watchNetwork(page) {
     listeners = []
   }
   return () => {
-    let promise = new Promise((resolve) => {
+    let promise = new Promise(resolve => {
       let timeoutId = setTimeout(resolve, 5000)
       listeners.push({ resolve, timeoutId })
     })
