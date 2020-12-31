@@ -34,6 +34,7 @@ module.exports.Editor = Editor
 
 
 const launchEditor = async () => {
+  console.log("Launching a browser...")
   const browser = await puppeteer.launch({
     devtools: false,
     headless: true,

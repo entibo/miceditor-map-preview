@@ -8,7 +8,7 @@ const {Editor} = require("./editor-runner")
 
 const IMGUR_CLIENT_ID = "ba8c5d881c8f203"
 const port = process.env.PORT || 3000
-const NUM_EDITORS = 10
+const NUM_EDITORS = 3
 
 let editorPool = []
 for(let i=0; i < NUM_EDITORS; i++) {
