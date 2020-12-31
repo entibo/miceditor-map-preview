@@ -35,6 +35,8 @@ module.exports.Editor = Editor
 
 const launchEditor = async () => {
   const browser = await puppeteer.launch({
+    devtools: false,
+    headless: true,
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",

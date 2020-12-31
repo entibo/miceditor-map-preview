@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "PORT=3000 pm2 start \"node index.js\"",
+    "start": "PORT=3000 pm2-runtime start \"node index.js\"",
     "dev": "nodemon index.js"
   },
   "keywords": [],
