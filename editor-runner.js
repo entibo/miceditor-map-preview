@@ -72,6 +72,7 @@ const launchEditor = async () => {
   console.log("Editor is ready")
 
   let loadXML = async xml => {
+    xml = xml.replace(/MEDATA="[^"]+"/, "")
     let rect = JSON.parse(
       await page.evaluate(async xml => {
         // Load the map and wait for render
