@@ -54,6 +54,7 @@ app.post("/", async (req, res) => {
       for (let editor of editorPool) {
         if (!editor.available) continue
         console.log("Using editor #" + editorPool.indexOf(editor))
+        clearInterval(intervalId)
         try {
           editor.available = false
           await proceed(editor)

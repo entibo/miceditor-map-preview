@@ -10,12 +10,15 @@ class Editor {
     this.refresh()
   }
   async refresh() {
+    console.log("Refreshing editor")
     this.available = false
     if (this.editorPromise) {
       await this.close()
     }
     this.editorPromise = launchEditor()
-    this.editorPromise.then(() => (this.available = true))
+    await editorPromise
+    this.available = true
+    console.log("Editor refreshed !")
   }
   async screenshot(options) {
     let editor = await this.editorPromise
