@@ -42,15 +42,26 @@ app.post("/", async (req, res) => {
   }
   let _editor
   try {
-    let intervalId = setInterval(() => {
+    let resolve, reject
+    let promise = new Promise((_resolve, _reject) => {
+      reject = _reject
+      resolve = _resolve
+    })
+    let timeoutId = setTimeout(() => {
+      reject("Service temporarily unavailable")
+    }, 25000)
+    let intervalId = setInterval(async () => {
       for (let editor of editorPool) {
-        if (editor.available) {
-          console.log("Using editor #" + editorPool.indexOf(editor))
+        if (!editor.available) continue
+        console.log("Using editor #" + editorPool.indexOf(editor))
+        try {
           editor.available = false
-          clearInterval(intervalId)
-          proceed(editor)
-          break
+          await proceed(editor)
+          resolve()
+        } catch (e) {
+          reject(e)
         }
+        return
       }
     }, 100)
     let proceed = async editor => {
@@ -76,6 +87,11 @@ app.post("/", async (req, res) => {
         }
       }
     }
+    promise.finally(() => {
+      clearInterval(intervalId)
+      clearTimeout(timeoutId)
+    })
+    await promise
   } catch (e) {
     console.error("error:", e)
     res.status(500)
