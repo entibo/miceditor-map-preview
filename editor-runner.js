@@ -16,7 +16,7 @@ class Editor {
       await this.close()
     }
     this.editorPromise = launchEditor()
-    await editorPromise
+    await this.editorPromise
     this.available = true
     console.log("Editor refreshed !")
   }
